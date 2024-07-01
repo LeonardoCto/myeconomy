@@ -19,7 +19,7 @@ const SettingsScreen = () => {
       reference_month: mes
     };
     const token = await AsyncStorage.getItem('userToken');
-    axios.post('http://192.168.0.51:3005/limit/create', data, {
+    axios.post('http://192.168.0.70:3005/limit/create', data, {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -36,7 +36,7 @@ const SettingsScreen = () => {
 
   const handleGetLimit = async () => {
     const token = await AsyncStorage.getItem('userToken');
-    axios.get(`http://192.168.0.51:3005/limit/mes/${mes}`, {
+    axios.get(`http://192.168.0.70:3005/limit/mes/${mes}`, {
       headers: {
         Authorization: `Bearer ${token}`
       }
@@ -54,7 +54,7 @@ const SettingsScreen = () => {
 
   const handleEditLimit = async () => {
     const token = await AsyncStorage.getItem('userToken');
-    axios.put('http://192.168.0.51:3005/limit/update', {
+    axios.put('http://192.168.0.70:3005/limit/update', {
       id: limiteConsultado.id,
       limit_amount: novoValor
     }, {
@@ -76,7 +76,7 @@ const SettingsScreen = () => {
 
   const handleDeleteLimit = async () => {
     const token = await AsyncStorage.getItem('userToken');
-    axios.delete('http://192.168.0.51:3005/limit/delete', {
+    axios.delete('http://192.168.0.70:3005/limit/delete', {
       headers: {
         Authorization: `Bearer ${token}`
       },

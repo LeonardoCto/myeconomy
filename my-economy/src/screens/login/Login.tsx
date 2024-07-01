@@ -14,7 +14,7 @@ const LoginScreen = ({ navigation }) => {
       password: password
     }
 
-    axios.post('http://192.168.0.51:3005/signin', data)
+    axios.post('http://192.168.0.70:3005/signin', data)
       .then(async response => {
         console.log(response.data);
         const token = response.data.token;

@@ -15,7 +15,7 @@ const ProfileScreen = ({ route, navigation }) => {
   const handleUserInfo = async () => {
     try {
       const token = await AsyncStorage.getItem('userToken');
-      const response = await axios.get('http://192.168.0.51:3005/user', {
+      const response = await axios.get('http://192.168.0.70:3005/user', {
         headers: {
           'Authorization': `Bearer ${token}`
         }

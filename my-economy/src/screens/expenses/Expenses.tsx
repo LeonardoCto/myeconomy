@@ -15,15 +15,17 @@ const DespesaScreen = () => {
     const [editingExpense, setEditingExpense] = useState(null);
     const [newDescription, setNewDescription] = useState('');
     const [newAmount, setNewAmount] = useState('');
+    const [categories, setCategories] = useState([]);
 
     useEffect(() => {
         handleGetExpenses();
+        fetchCategories(); // Carrega as categorias ao montar o componente
     }, []);
 
     const handleGetExpenses = async () => {
         try {
             const token = await AsyncStorage.getItem('userToken');
-            const response = await axios.get('http://192.168.0.51:3005/expense', {
+            const response = await axios.get('http://192.168.0.70:3005/expense', {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -49,7 +51,7 @@ const DespesaScreen = () => {
 
         try {
             const token = await AsyncStorage.getItem('userToken');
-            const response = await axios.post('http://192.168.0.51:3005/expense/create', expenseData, {
+            const response = await axios.post('http://192.168.0.70:3005/expense/create', expenseData, {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 }
@@ -59,7 +61,7 @@ const DespesaScreen = () => {
                 setDescription('');
                 setAmount('');
                 setReference_month(null);
-                handleGetExpenses(); // Refresh the expenses list
+                handleGetExpenses(); // Atualiza a lista de despesas
             } else {
                 Alert.alert('Erro', response.data);
             }
@@ -76,7 +78,7 @@ const DespesaScreen = () => {
 
         try {
             const token = await AsyncStorage.getItem('userToken');
-            const response = await axios.put('http://192.168.0.51:3005/expense/update', {
+            const response = await axios.put('http://192.168.0.70:3005/expense/update', {
                 id: editingExpense.id,
                 description: newDescription,
                 amount: parseFloat(newAmount),
@@ -88,7 +90,7 @@ const DespesaScreen = () => {
             if (response.status === 200) {
                 Alert.alert('Sucesso', 'Despesa editada com sucesso!');
                 setModalVisible(false);
-                handleGetExpenses(); // Refresh the expenses list
+                handleGetExpenses(); // Atualiza a lista de despesas
             } else {
                 Alert.alert('Erro', response.data);
             }
@@ -100,7 +102,7 @@ const DespesaScreen = () => {
     const handleDeleteExpense = async (id) => {
         try {
             const token = await AsyncStorage.getItem('userToken');
-            const response = await axios.delete('http://192.168.0.51:3005/expense/delete', {
+            const response = await axios.delete('http://192.168.0.70:3005/expense/delete', {
                 headers: {
                     'Authorization': `Bearer ${token}`
                 },
@@ -108,7 +110,7 @@ const DespesaScreen = () => {
             });
             if (response.status === 200) {
                 Alert.alert('Sucesso', 'Despesa excluída com sucesso!');
-                handleGetExpenses(); // Refresh the expenses list
+                handleGetExpenses(); // Atualiza a lista de despesas
             } else {
                 Alert.alert('Erro', response.data);
             }
@@ -138,10 +140,7 @@ const DespesaScreen = () => {
     const fetchExpensesByMonth = async (month) => {
         try {
             const token = await AsyncStorage.getItem('userToken');
-            const url = `http://192.168.0.51:3005/expense/mes/${month}`;
-            
-            // Printar a URL completa no console
-            console.log('URL completa:', url);
+            const url = `http://192.168.0.70:3005/expense/mes/${month}`;
     
             const response = await axios.get(url, {
                 headers: {
@@ -158,7 +157,24 @@ const DespesaScreen = () => {
             console.error('Erro ao buscar despesas por mês', error);
         }
     };
-    
+
+    const fetchCategories = async () => {
+        try {
+            const token = await AsyncStorage.getItem('userToken');
+            const response = await axios.get('http://192.168.0.70:3005/categories', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (response.status === 200) {
+                setCategories(response.data.categories);
+            } else {
+                console.log('Erro ao buscar categorias:', response.data);
+            }
+        } catch (error) {
+            console.error('Erro ao buscar categorias:', error);
+        }
+    };
 
     const meses = [
         { label: 'Janeiro', value: '01-01-2024' },
@@ -200,6 +216,18 @@ const DespesaScreen = () => {
                 }}
                 placeholder={{
                     label: 'Selecione um mês...',
+                    value: null,
+                }}
+            />
+            <RNPickerSelect
+                onValueChange={(value) => console.log(value)}
+                items={categories.map(category => ({ label: category.name, value: category.id }))}
+                style={{
+                    inputIOS: styles.input,
+                    inputAndroid: styles.input,
+                }}
+                placeholder={{
+                    label: 'Selecione uma categoria...',
                     value: null,
                 }}
             />

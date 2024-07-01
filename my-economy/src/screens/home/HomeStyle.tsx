@@ -18,7 +18,29 @@ const styles = StyleSheet.create({
       paddingTop: 100
     },
     
-    
+    modalContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    },
+    modalContent: {
+      backgroundColor: 'white',
+      padding: 20,
+      borderRadius: 10,
+      width: '80%',
+      alignItems: 'center',
+    },
+    modalTitle: {
+      fontSize: 20,
+      fontWeight: 'bold',
+      marginBottom: 10,
+    },
+    modalText: {
+      fontSize: 16,
+      marginBottom: 10,
+    },
+
     container: {
         flex: 1,
         justifyContent: 'center',
@@ -69,7 +91,35 @@ const styles = StyleSheet.create({
       height: '100%',
       backgroundColor: '#4caf50',
     },
-
+    progressBarText: {
+      height: 20,
+      width: '100%',
+      backgroundColor: '#f0f0f0',
+      borderRadius: 5,
+      overflow: 'hidden',
+    },
+    modalCategoryList: {
+      marginTop: 20,
+    },
+    modalCategoryItem: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 10,
+    },
+    modalProgressBar: {
+      height: 10,
+      width: '100%',
+      backgroundColor: '#f0f0f0',
+      borderRadius: 5,
+      overflow: 'hidden',
+      marginTop: 20,
+    },
+    modalProgress: {
+      height: '100%',
+      backgroundColor: '#4caf50',
+    },
+    
 
   });
 
