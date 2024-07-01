@@ -119,8 +119,29 @@ const styles = StyleSheet.create({
       height: '100%',
       backgroundColor: '#4caf50',
     },
-    
 
+    categoryContainer: {
+      marginVertical: 10,
+    },
+    categoryName: {
+      fontSize: 16,
+      fontWeight: 'bold',
+    },
+    categoryProgressBar: {
+      height: 20,
+      backgroundColor: '#f0f0f0',
+      borderRadius: 5,
+      overflow: 'hidden',
+      marginTop: 5,
+    },
+    categoryProgress: {
+      height: '100%',
+      backgroundColor: '#4caf50',
+    },
+    categoryAmount: {
+      fontSize: 14,
+      color: 'gray',
+    },
   });
 
   export default styles;

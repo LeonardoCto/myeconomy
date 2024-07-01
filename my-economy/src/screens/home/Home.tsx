@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Alert, TouchableWithoutFeedback, Modal, Button } from 'react-native';
+import { View, Text, StyleSheet, Alert, TouchableWithoutFeedback, Modal, Button, FlatList  } from 'react-native';
 import RNPickerSelect from 'react-native-picker-select';
 import ProgressBar from 'react-native-progress/Bar';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import axios from 'axios';
 import { LinearGradient } from 'expo-linear-gradient';
 import styles from './HomeStyle';
+
+
 
 
 const HomeScreen = ({ route, navigation }) => {
@@ -19,6 +21,8 @@ const HomeScreen = ({ route, navigation }) => {
   const [progressBarProgress, setProgressBarProgress] = useState(0);
   const [showProgressPopup, setShowProgressPopup] = useState(false);
   const [categoryData, setCategoryData] = useState([]);
+  const [categories, setCategories] = useState([]); // Estado para armazenar as categorias
+  const [selectedCategoryId, setSelectedCategoryId] = useState(null);
 
   const meses = [
     { label: 'Janeiro', value: '01-01-2024' },
@@ -57,6 +61,28 @@ const HomeScreen = ({ route, navigation }) => {
     }
   }, [expenseData]);
 
+  useEffect(() => {
+    fetchCategories(); // Carrega as categorias ao montar o componente
+  }, []);
+
+  const fetchCategories = async () => {
+    try {
+      const token = await AsyncStorage.getItem('userToken');
+      const response = await axios.get('http://192.168.0.70:3005/categories', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      if (response.status === 200) {
+        setCategories(response.data.categories);
+      } else {
+        console.log('Erro ao buscar categorias:', response.data);
+      }
+    } catch (error) {
+      console.error('Erro ao buscar categorias:', error);
+    }
+  };
+
   const calculateCategoryExpenses = () => {
     const categories = {};
     expenseData.forEach(expense => {
@@ -75,7 +101,6 @@ const HomeScreen = ({ route, navigation }) => {
     const categoriesArray = Object.values(categories);
     setCategoryData(categoriesArray);
   };
-
 
   const handleUserInfo = async () => {
     try {
@@ -137,6 +162,9 @@ const HomeScreen = ({ route, navigation }) => {
         setPercentageUsed(parseFloat(percentage.toFixed(2)));
         console.log('Total Expenses:', totalExpenses);
         console.log('Percentage Used:', percentage);
+
+        // Após receber os dados de despesas, calcula as categorias
+        calculateCategoryExpenses();
       } else {
         console.log('Erro ao buscar despesas por mês:', response.data);
       }
@@ -158,7 +186,7 @@ const HomeScreen = ({ route, navigation }) => {
   };
 
   return (
-    <View style={styles.hello}>
+    <View style={styles.container}>
       {userData && (
         <>
           <Text style={styles.userName}>Olá {userData.name} 👋</Text>
@@ -166,74 +194,93 @@ const HomeScreen = ({ route, navigation }) => {
         </>
       )}
 
-      <View style={styles.container}>
-        <RNPickerSelect
-          onValueChange={handleMonthChange}
-          items={meses}
-          style={{
-            inputIOS: styles.input,
-            inputAndroid: styles.input,
-          }}
-          placeholder={{
-            label: 'Selecione um mês...',
-            value: null,
-          }}
-        />
-        <View style={styles.boxContainer}>
-          <LinearGradient
-            colors={['rgb(71, 173, 98)', 'rgba(135, 204, 153, 0.8)']}
-            style={styles.background}
-          >
-            <Text style={styles.statusMeta}>
-              {percentageUsed === 0 ? 'Status da meta' :
-                percentageUsed < 100 ? 'Parabéns, você economizou 🤩' : 'Objetivo não atingido 😢'
-              }
-            </Text>
-          </LinearGradient>
+      <RNPickerSelect
+        onValueChange={handleMonthChange}
+        items={meses}
+        style={{
+          inputIOS: styles.input,
+          inputAndroid: styles.input,
+        }}
+        placeholder={{
+          label: 'Selecione um mês...',
+          value: null,
+        }}
+      />
+
+      <View style={styles.boxContainer}>
+        <LinearGradient
+          colors={['rgb(71, 173, 98)', 'rgba(135, 204, 153, 0.8)']}
+          style={styles.background}
+        >
+          <Text style={styles.statusMeta}>
+            {percentageUsed === 0 ? 'Status da meta' :
+              percentageUsed < 100 ? 'Parabéns, você economizou 🤩' : 'Objetivo não atingido 😢'
+            }
+          </Text>
+        </LinearGradient>
+      </View>
+
+      <Text style={styles.userHello}>Progresso</Text>
+      <Text style={styles.progressBarText}>Despesa total: R$ {expenseAmounts.reduce((acc, curr) => acc + curr, 0).toFixed(2)}</Text>
+      <Text style={styles.progressBarText}>Limite do mês: R$ {limitAmount}</Text>
+
+      <TouchableWithoutFeedback onPress={handleProgressClick}>
+        <View style={styles.progressBar}>
+          <ProgressBar
+            progress={progressBarProgress}
+            width={null}
+            height={20}
+            borderRadius={5}
+            color="rgb(71, 173, 98)"
+            unfilledColor="rgba(135, 204, 153, 0.3)"
+          />
         </View>
-        <Text style={styles.userHello}>Progresso</Text>
-        <Text style={styles.progressBarText}>Despesa total: R$ {expenseAmounts.reduce((acc, curr) => acc + curr, 0).toFixed(2)}</Text>
-        <Text style={styles.progressBarText}>Limite do mês: R$ {limitAmount}</Text>
-        <TouchableWithoutFeedback onPress={handleProgressClick}>
-          <View style={styles.progressBar}>
-            <ProgressBar
-              progress={progressBarProgress}
-              width={null}
-              height={20}
-              borderRadius={5}
-              color="rgb(71, 173, 98)"
-              unfilledColor="rgba(135, 204, 153, 0.3)"
+      </TouchableWithoutFeedback>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showProgressPopup}
+        onRequestClose={() => {
+          setShowProgressPopup(false);
+        }}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Progresso Geral</Text>
+            <Text style={styles.modalText}>Progresso total: {percentageUsed.toFixed(2)}%</Text>
+
+            <Text style={styles.modalText}>Categorias:</Text>
+            <FlatList
+              data={categoryData}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <View style={styles.categoryContainer}>
+                  <Text style={styles.categoryName}>{item.name}</Text>
+                  <ProgressBar
+                    progress={item.totalAmount / limitAmount}
+                    width={null}
+                    height={10}
+                    borderRadius={5}
+                    color="rgb(71, 173, 98)"
+                    unfilledColor="rgba(135, 204, 153, 0.3)"
+                    style={styles.categoryProgressBar}
+                  />
+                  <Text style={styles.categoryAmount}>R${item.totalAmount.toFixed(2)} / R${limitAmount}</Text>
+                </View>
+                
+              )}
+            />
+            
+            <Button
+              title="Fechar"
+              onPress={() => setShowProgressPopup(false)}
             />
           </View>
-        </TouchableWithoutFeedback>
-        <Modal
-          animationType="slide"
-          transparent={true}
-          visible={showProgressPopup}
-          onRequestClose={() => {
-            setShowProgressPopup(false);
-          }}
-        >
-          <View style={styles.modalContainer}>
-            <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Progresso Geral</Text>
-              <Text style={styles.modalText}>Progresso total: {percentageUsed.toFixed(2)}%</Text>
-
-              
-              <View style={styles.modalProgressBar}>
-                <View style={[styles.progress, { width: `${progressBarProgress * 100}%` }]} />
-              </View>
-              <Button
-                title="Fechar"
-                onPress={() => setShowProgressPopup(false)}
-              />
-            </View>
-          </View>
-        </Modal>
-      </View>
+        </View>
+      </Modal>
     </View>
   );
-
 };
 
 export default HomeScreen;

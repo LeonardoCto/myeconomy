@@ -5,6 +5,7 @@ import axios from 'axios';
 import styles from './ExpensesStyle';
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+
 const DespesaScreen = () => {
     const [description, setDescription] = useState('');
     const [amount, setAmount] = useState('');
@@ -16,11 +17,31 @@ const DespesaScreen = () => {
     const [newDescription, setNewDescription] = useState('');
     const [newAmount, setNewAmount] = useState('');
     const [categories, setCategories] = useState([]);
-
+    const [selectedCategoryId, setSelectedCategoryId] = useState(null);
+    
+    
     useEffect(() => {
         handleGetExpenses();
         fetchCategories(); // Carrega as categorias ao montar o componente
     }, []);
+
+    const fetchCategories = async () => {
+        try {
+            const token = await AsyncStorage.getItem('userToken');
+            const response = await axios.get('http://192.168.0.70:3005/categories', {
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                }
+            });
+            if (response.status === 200) {
+                setCategories(response.data.categories);
+            } else {
+                console.log('Erro ao buscar categorias:', response.data);
+            }
+        } catch (error) {
+            console.error('Erro ao buscar categorias:', error);
+        }
+    };
 
     const handleGetExpenses = async () => {
         try {
@@ -38,8 +59,14 @@ const DespesaScreen = () => {
     };
 
     const handleSaveExpense = async () => {
-        if (!description || !amount || !reference_month) {
-            Alert.alert('Erro', 'Por favor, preencha todos os campos');
+        console.log('description:', description);
+        console.log('amount:', amount);
+        console.log('reference_month:', reference_month);
+        console.log('selectedCategoryId:', selectedCategoryId);
+    
+        // Verificação de preenchimento
+        if (!description || !amount || !reference_month || !selectedCategoryId) {
+            Alert.alert('Erro', 'Por favor, preencha todos os campos e selecione uma categoria');
             return;
         }
 
@@ -47,6 +74,7 @@ const DespesaScreen = () => {
             description,
             amount: parseFloat(amount),
             reference_month,
+            category_id: selectedCategoryId // Adiciona o category_id selecionado
         };
 
         try {
@@ -61,6 +89,7 @@ const DespesaScreen = () => {
                 setDescription('');
                 setAmount('');
                 setReference_month(null);
+                setSelectedCategoryId(null); // Limpa o category_id selecionado
                 handleGetExpenses(); // Atualiza a lista de despesas
             } else {
                 Alert.alert('Erro', response.data);
@@ -69,6 +98,7 @@ const DespesaScreen = () => {
             Alert.alert('Erro', error.response.data);
         }
     };
+
 
     const handleEditExpense = async () => {
         if (!newDescription || !newAmount) {
@@ -157,25 +187,8 @@ const DespesaScreen = () => {
             console.error('Erro ao buscar despesas por mês', error);
         }
     };
-
-    const fetchCategories = async () => {
-        try {
-            const token = await AsyncStorage.getItem('userToken');
-            const response = await axios.get('http://192.168.0.70:3005/categories', {
-                headers: {
-                    'Authorization': `Bearer ${token}`
-                }
-            });
-            if (response.status === 200) {
-                setCategories(response.data.categories);
-            } else {
-                console.log('Erro ao buscar categorias:', response.data);
-            }
-        } catch (error) {
-            console.error('Erro ao buscar categorias:', error);
-        }
-    };
-
+    
+    
     const meses = [
         { label: 'Janeiro', value: '01-01-2024' },
         { label: 'Fevereiro', value: '01-02-2024' },
@@ -219,8 +232,8 @@ const DespesaScreen = () => {
                     value: null,
                 }}
             />
-            <RNPickerSelect
-                onValueChange={(value) => console.log(value)}
+             <RNPickerSelect
+                onValueChange={(value) => setSelectedCategoryId(value)}
                 items={categories.map(category => ({ label: category.name, value: category.id }))}
                 style={{
                     inputIOS: styles.input,
