@@ -84,23 +84,29 @@ const HomeScreen = ({ route, navigation }) => {
   };
 
   const calculateCategoryExpenses = () => {
-    const categories = {};
+    const categoriesMap = new Map();
+  
     expenseData.forEach(expense => {
       const categoryId = expense.category_id;
-      if (!categories[categoryId]) {
-        categories[categoryId] = {
+      const category = categories.find(cat => cat.id === categoryId);
+      const categoryName = category ? category.name : 'Categoria não encontrada';
+  
+      if (!categoriesMap.has(categoryId)) {
+        categoriesMap.set(categoryId, {
           id: categoryId,
-          name: expense.category_name, // Supondo que a API retorne o nome da categoria
+          name: categoryName,
           totalAmount: parseFloat(expense.amount),
-        };
+        });
       } else {
-        categories[categoryId].totalAmount += parseFloat(expense.amount);
+        const existingCategory = categoriesMap.get(categoryId);
+        existingCategory.totalAmount += parseFloat(expense.amount);
       }
     });
-
-    const categoriesArray = Object.values(categories);
+  
+    const categoriesArray = Array.from(categoriesMap.values());
     setCategoryData(categoriesArray);
   };
+  
 
   const handleUserInfo = async () => {
     try {

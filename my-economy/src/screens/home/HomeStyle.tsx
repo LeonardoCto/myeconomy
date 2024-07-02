@@ -86,6 +86,7 @@ const styles = StyleSheet.create({
       backgroundColor: '#f0f0f0',
       borderRadius: 5,
       overflow: 'hidden',
+      marginTop: -25
     },
     progress: {
       height: '100%',
@@ -113,7 +114,7 @@ const styles = StyleSheet.create({
       backgroundColor: '#f0f0f0',
       borderRadius: 5,
       overflow: 'hidden',
-      marginTop: 20,
+      marginTop: 10,
     },
     modalProgress: {
       height: '100%',
@@ -124,8 +125,11 @@ const styles = StyleSheet.create({
       marginVertical: 10,
     },
     categoryName: {
-      fontSize: 16,
+      height:12,
+      fontSize: 10,
       fontWeight: 'bold',
+      color: 'black'
+      
     },
     categoryProgressBar: {
       height: 20,
